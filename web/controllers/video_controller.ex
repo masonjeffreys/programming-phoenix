@@ -16,8 +16,26 @@ defmodule Rumbl.VideoController do
   end
 
   def new(conn, _params, user) do
-    changeset = Video.changeset(%Video{})
+    changeset =
+    user
+    |> build(:videos)
+    |> Video.changeset()
     render(conn, "new.html", changeset: changeset)
+  end
+
+  def create(conn, %{"video" => video_params}, user) do
+    changeset =
+    user
+    |> build(:videos)
+    |> Video.changeset(video_params)
+    case Repo.insert(changeset) do
+      {:ok, _video} ->
+        conn
+        |> put_flash(:info, "Video created successfully.")
+        |> redirect(to: video_path(conn, :index))
+      {:error, changeset} ->
+        render(conn, "new.html", changeset: changeset)
+    end
   end
 
   def create(conn, %{"video" => video_params}, user) do
